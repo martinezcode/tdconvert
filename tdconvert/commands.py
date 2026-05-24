@@ -40,8 +40,13 @@ def test(CurrentHub: AppHub) -> None:
     """
     # Validate the hub
     if not CurrentHub:
-        CurrentHub.logger.info(f"Unable to launch app")
+        CurrentHub.logger.error(f"Unable to launch app")
         return
+
+    # Perform onboarding if onboarding_required flag is True in settings
+    if not CurrentHub.setup():
+        # Required onboarding failed or user quit
+        CurrentHub.logger.error(f"{CurrentHub.display_name} is unable to continue without required onboarding")
 
     # Introduce the app
     CurrentHub.logger.info(f"Welcome to {CurrentHub.display_name} version {CurrentHub.version}")
@@ -78,9 +83,23 @@ def convert(
     Auto-detects file type from extension.
     Uses original file name in same directory if no output path is provided.
     """
+    # Validate the hub
+    if not CurrentHub:
+        CurrentHub.logger.error(f"Unable to launch app")
+        return
+
+    # Perform onboarding if onboarding_required flag is True in settings
+    if not CurrentHub.setup():
+        # Required onboarding failed or user quit
+        CurrentHub.logger.error(f"{CurrentHub.display_name} is unable to continue without required onboarding")
+
+    # Validate the input file
+    if not input:
+        CurrentHub.logger.error(f"No input file provided")
+        return
+
     input_file_path = Path(input)
 
-    # 1. Validation
     if not input_file_path.exists():
         CurrentHub.logger.error(f"Input file not found: {input_file_path}")
         return
@@ -89,7 +108,7 @@ def convert(
         CurrentHub.logger.error(f"Unsupported file format: {input_file_path.suffix}")
         return
 
-    # 2. Determine Output Path
+    # Determine Output Path
     if not output:
         CurrentHub.logger.info(f"Using automatic output file path")
         new_suffix = ".docx" if input_file_path.suffix.lower() == ".md" else ".md"
@@ -98,10 +117,10 @@ def convert(
         CurrentHub.logger.info(f"Using provided output file path")
         output_file_path = Path(output)
 
-    # 3. Conflict Handling
-    output_file_path = library.handle_output_conflict(CurrentHub, output_file_path, force)
+    # Conflict Handling
+    output_file_path = library.resolve_output_file_path(CurrentHub, output_file_path, force)
 
-    # 4. Conversion Logic
+    # Conversion Logic
     try:
         CurrentHub.logger.info(f"Starting conversion: {input_file_path} -> {output_file_path}")
 
@@ -118,7 +137,7 @@ def convert(
 
         CurrentHub.logger.info(f"Successfully converted to: {output_file_path}")
 
-        library.save_to_history(CurrentHub, str(input_file_path))
+        library.save_recent_file(CurrentHub, str(input_file_path))
 
     except Exception as e:
         CurrentHub.logger.error(f"Conversion failed: {e}")
@@ -134,7 +153,68 @@ def recent(
     Displays numbered recent files stored in AppHub database.
     Prompts for choice of file number to reconvert.
     """
-    pass
+    # Validate the hub
+    if not CurrentHub:
+        CurrentHub.logger.error(f"Unable to launch app")
+        return
+
+    # Make sure database is available
+    if not CurrentHub.database.database_created:
+        CurrentHub.logger.error(f"The database is unavailable.")
+        return
+
+    conn = CurrentHub.database.connect()
+    if not conn:
+        CurrentHub.logger.error(f"Database unavailable")
+        return
+
+    # Build the query
+    sql_limit = f"LIMIT {limit}"
+    if not limit or limit <= 0:
+        CurrentHub.logger.warning(f"Falling back to default limit due to invalid input: '{limit}'")
+        sql_limit = "LIMIT 10"
+    sql = f"""
+        SELECT DISTINCT input_file
+        FROM
+            History
+        ORDER BY timestamp desc
+        {sql_limit}
+    """
+    parameters = None
+
+    # Search the database
+    file_rows = pza.database.sql_select(sql, parameters, conn)
+    if not file_rows:
+        CurrentHub.logger.info(f"No files found")
+        conn.close()
+        return None
+
+    # Display all matches
+    file_indexes = {}
+    idx = 0
+    for file_row in file_rows:
+        idx += 1
+        input_file = file_row["input_file"]
+        print(f"{idx}. {input_file}")
+        file_indexes[f"{idx}"] = input_file
+
+    # Prompt for choice of conversion to run
+    while True:
+        response = input(f"\nEnter a number to run the conversion or type 'q' to quit:")
+        if response.lower().startswith('q'):
+            print("Goodbye")
+            break
+        else:
+            input_file = file_indexes.get(response, None)
+            if not input_file:
+                print(f"Invalid file number: {response}")
+                continue
+            else:
+                print(f"Converting: {input_file}\n")
+                convert(CurrentHub, input_file)
+                break
+
+    conn.close()
 
 if __name__ == "__main__":
 

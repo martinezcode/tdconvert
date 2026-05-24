@@ -34,6 +34,7 @@ def get_settings_recipe() -> dict:
     """
     recipe = {
         "onboarding_required": False, # Override framwork default
+        "log_level": "debug",
     }
     return recipe
 

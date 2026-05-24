@@ -23,16 +23,18 @@ if __name__ == "__main__":
     print_separator()
 
     # Test
-    print_subheader(f"Testing Random Flag")
 
-    profile = "test"
-    overrides = None
-    TestHub = tdconvert.properties.initialize_app(profile, overrides)
-    database_populated = tdconvert.library.import_sample_data(TestHub)
-    if database_populated:
-        flag_row = tdconvert.library.get_random_flag(TestHub)
-        print(flag_row["flag_name"])
-        print()
+    print("todo: insert library function tests")
+    # print_subheader(f"Testing Random Flag")
+
+    # profile = "test"
+    # overrides = None
+    # TestHub = tdconvert.properties.initialize_app(profile, overrides)
+    # database_populated = tdconvert.library.import_sample_data(TestHub)
+    # if database_populated:
+    #     flag_row = tdconvert.library.get_random_flag(TestHub)
+    #     print(flag_row["flag_name"])
+    #     print()
 
     print_separator()
 

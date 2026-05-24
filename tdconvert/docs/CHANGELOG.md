@@ -4,3 +4,5 @@
 - Generated app from template
 - Customized app according to requirements
 - Updated pyproject.toml
+- Added recent files command
+- Set default log level to debug
