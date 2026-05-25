@@ -52,12 +52,125 @@ def get_database_recipe() -> dict:
     recipe = {
         "schema_version": "0.4.2",
         "History": {
-            "file_id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+            "history_id": "INTEGER PRIMARY KEY AUTOINCREMENT",
             "input_file": "TEXT",
+            "output_files": "TEXT",
             "timestamp": "DATETIME",
-        }
+        },
+        "Extensions": {
+            "extension_id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+            "extension": "TEXT",
+        },
+        "Engines": {
+            "engine_id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+            "engine": "TEXT",
+        },
+        "Formats": {
+            "format_id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+            "format": "TEXT",
+            "description": "TEXT",
+            "readable": "BOOLEAN",
+            "writeable": "BOOLEAN",
+            "engine_description": "TEXT",
+        },
+        "FormatExtensions": {
+            "format_id": "INTEGER",
+            "extension_id": "INTEGER",
+        },
+        "FormatEngines": {
+            "format_id": "INTEGER",
+            "engine_id": "INTEGER",
+        },
+        "FormatMap": {
+            "format_map_id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+            "profile_id": "TEXT",
+            "input_format_id": "INTEGER",
+            "conflict_option": "TEXT",
+        },
+        "FormatMapOutputs": {
+            "format_map_id": "INTEGER",
+            "output_format_id": "INTEGER",
+        },
     }
     return recipe
+
+def get_format_recipe() -> dict:
+    """
+    Defines supported conversion formats.
+    """
+    formats = {
+        "markdown": {
+            "extensions": [".md",".markdown"],
+            "description": "Markdown",
+            "readable": True,
+            "writeable": True,
+            "engine_description": "Markdown Style (Original, Pandoc Enhanced, or GitHub-Flavored)",
+            "engines": [
+                "markdown_strict",
+                "pandoc",
+                "gfm",
+            ]
+        },
+        "docx": {
+            "extensions": [".docx",],
+            "description": "Microsoft Word",
+            "readable": True,
+            "writeable": True,
+        },
+        "json": {
+            "extensions": [".json",],
+            "description": "JavaScript Object Notation",
+            "readable": True,
+            "writeable": True,
+        },
+        "rtf": {
+            "extensions": [".rtf",],
+            "description": "Rich Text Format",
+            "readable": True,
+            "writeable": True,
+        },
+        "pdf": {
+            "extensions": [".pdf",],
+            "description": "Portable Document Format",
+            "readable": False,
+            "writeable": True,
+            "engine_description": "Engine for producing PDF Output",
+            "engines": [
+                "pdflatex",
+                "lualatex",
+                "xelatex",
+                "latexmk",
+                "tectonic",
+                "wkhtmltopdf",
+                "weasyprint",
+                "pagedjs-cli",
+                "prince",
+                "context",
+                "groff",
+                "pdfroff",
+                "typst",
+            ]
+        },
+        "csv": {
+            "extensions": [".csv",],
+            "description": "Comma Separated Values",
+            "readable": True,
+            "writeable": False,
+        },
+        "html": {
+            "extensions": [".html",],
+            "description": "HyperText Markup Language",
+            "readable": True,
+            "writeable": True,
+        },
+        "plain": {
+            "extensions": [".txt",],
+            "description": "Plain Text",
+            "readable": False,
+            "writeable": True,
+        },
+    }
+    return formats
 
 def get_command_recipe() -> dict:
     """

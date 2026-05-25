@@ -28,6 +28,14 @@ def welcome(CurrentHub: AppHub) -> None:
     This is the default mode if no command is given.
     """
     CurrentHub.logger.info(f"Welcome to {CurrentHub.display_name} version {CurrentHub.version}")
+
+    database_populated = library.populate_database_formats(CurrentHub)
+    if database_populated:
+        CurrentHub.logger.info(f"Database populated")
+    else:
+        CurrentHub.logger.info(f"So sorry for the error")
+        # Close the app
+
     CurrentHub.logger.info(f"Thank you for using {CurrentHub.display_name}")
     return
 
@@ -215,6 +223,76 @@ def recent(
                 break
 
     conn.close()
+
+# --- Mapping entry point ---
+# --- Runs when app is launched with command 'map' ---
+
+def map(
+    CurrentHub: AppHub
+) -> None:
+    """
+    File format mapping CRUD.
+    Each readable format can be mapped to one or more writeable formats.
+    """
+    # Validate the hub
+    if not CurrentHub:
+        CurrentHub.logger.error(f"Unable to launch app")
+        return
+
+    # Make sure database is available
+    if not CurrentHub.database.database_created:
+        CurrentHub.logger.error(f"The database is unavailable.")
+        return
+
+    # Connect to database
+    conn = CurrentHub.database.connect()
+    if not conn:
+        CurrentHub.logger.error(f"Database unavailable")
+        return
+
+    # Build the query
+    sql = f"SELECT * FROM FormatMap WHERE lower(profile_id) = ?"
+    parameters = (CurrentHub.profile,)
+
+    # Search the database
+    map_rows = pza.database.sql_select(sql, parameters, conn)
+
+    # Begin CRUD mode Loop
+
+        # Display readable formats:
+        # Table of mapped formats and list or grid of unmapped formats
+
+        # Prompt with 3 choices:
+
+        # Choice 1: Choose a readable format to add/edit
+
+            # User can choose one or more writable formats to assign to the chosen readable format
+
+            # User can choose an output engine if the format has engines available
+
+            # User can choose an option for handling existing output files (overwrite, rename, prompt)
+
+            # Add or replace the mapping in the database
+
+            # Continue CRUD mode loop (return to main prompt)
+
+        # Choice 2: Choose one or more mapped formats to delete
+
+            # Prompt for confirmation of deletion
+
+            # If confirmed, delete mapping from database
+
+            # Continue CRUD mode loop (return to main prompt)
+
+        # Choice 3: Quit
+
+            # Display summary of changes made
+
+            # Exit CRUD mode loop to quit the app
+
+    conn.close()
+    return
+
 
 if __name__ == "__main__":
 
