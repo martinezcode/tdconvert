@@ -6,3 +6,4 @@
 - Updated pyproject.toml
 - Added recent files command
 - Set default log level to debug
+- Implemented mapping and conversion features

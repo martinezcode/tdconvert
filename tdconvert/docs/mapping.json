@@ -1,0 +1,18 @@
+{
+    "profile_id": "default",
+    "format_id": "markdown",
+    "engine_id": "markdown_strict",
+    "output_format_ids": [
+        "rtf",
+        "plain"
+    ],
+    "output_engine_ids": [
+        "pandoc",
+        "pandoc"
+    ],
+    "output_extension_ids": [
+        ".rtf",
+        ".txt"
+    ],
+    "conflict_option": "overwrite"
+}
