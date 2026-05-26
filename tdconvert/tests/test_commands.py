@@ -42,7 +42,7 @@ if __name__ == "__main__":
     # Test
     print_subheader(f"Testing Entry Point")
 
-    tdconvert.commands.entry_point(TestHub)
+    tdconvert.commands.welcome(TestHub)
     print()
 
     print_separator()
